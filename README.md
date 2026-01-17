@@ -29,6 +29,17 @@ Durante el desarrollo, me di cuenta de que:
 Si quieres probarlo en tu propio entorno:
 
 1.  Clona esto: `git clone https://github.com/David-Varg/phishing-ethical.git`
+2. Instalar dependencias:
+Asegúrate de tener Python instalado y usa uno de estos métodos:
+    **Opción A (Pip):**
+    ```bash
+    pip install python-dotenv requests --break-system-packages
+    ```
+
+    **Opción B (APT para Linux/Termux):**
+    ```bash
+    sudo apt update && sudo apt install python3-requests python3-dotenv
+    ```
 2.  Crea un archivo `.env` con tu `TELEGRAM_TOKEN` y `TELEGRAM_CHAT_ID`.
 3.  Ejecuta: `python server.py` (o usa el alias que configuré si estás en Linux).
 
